@@ -205,77 +205,104 @@
       </div>
 
       <!-- Progressive Fields Extraction Panel -->
-      <div class="bg-[#080c16]/70 border border-zinc-800/80 rounded-xl p-5 shadow-lg flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-zinc-800 pb-2.5">
-          <span class="text-xs font-bold font-mono text-zinc-400 tracking-wider">PROGRESSIVE EXTRACTION</span>
-          <span id="extraction-status" class="text-[10px] font-mono text-zinc-500 animate-pulse">AWAITING IMAGE</span>
+      <div class="bg-[#080c16]/80 border border-zinc-800/90 rounded-xl p-5 shadow-lg flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+          <span class="text-xs font-black font-mono text-zinc-300 tracking-wider uppercase">01.1 // REAL-TIME PARSED DATA FIELDS</span>
+          <span id="extraction-status" class="text-[10px] font-bold font-mono text-zinc-500 animate-pulse bg-zinc-900/80 px-2 py-0.5 rounded border border-zinc-800">AWAITING IMAGE</span>
         </div>
 
-        <!-- Extraction list -->
-        <div class="flex flex-col gap-3 font-mono text-xs" id="extraction-fields-container">
-          <!-- progressive fields template -->
-          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-vendor_name">
-            <span class="text-zinc-500">vendor_name</span>
-            <div class="flex items-center gap-2">
-              <span class="text-zinc-600 field-value">...</span>
-              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-gstin">
-            <span class="text-zinc-500">gstin</span>
-            <div class="flex items-center gap-2">
-              <span class="text-zinc-600 field-value">...</span>
-              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-invoice_number">
-            <span class="text-zinc-500">invoice_number</span>
-            <div class="flex items-center gap-2">
-              <span class="text-zinc-600 field-value">...</span>
-              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-amount">
-            <span class="text-zinc-500">amount</span>
-            <div class="flex items-center gap-2">
-              <span class="text-zinc-600 field-value">...</span>
-              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-currency">
-            <span class="text-zinc-500">currency</span>
-            <div class="flex items-center gap-2">
-              <span class="text-zinc-600 field-value">...</span>
-              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-date">
-            <span class="text-zinc-500">date</span>
-            <div class="flex items-center gap-2">
-              <span class="text-zinc-600 field-value">...</span>
-              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-category">
-            <span class="text-zinc-500">category</span>
-            <div class="flex items-center gap-2">
-              <span class="text-zinc-600 field-value">...</span>
-              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
-            </div>
-          </div>
-          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-employee_id">
-            <span class="text-zinc-500">employee_id</span>
-            <div class="flex items-center gap-2">
-              <span class="text-zinc-600 field-value">...</span>
-              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
-            </div>
-          </div>
+        <!-- Extraction Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-zinc-800/80 text-[10px] font-mono text-zinc-400 font-bold uppercase tracking-wider">
+                <th class="pb-2 px-1">Attribute Name</th>
+                <th class="pb-2 px-2">Parsed Value</th>
+                <th class="pb-2 px-1 text-right">Confidence</th>
+              </tr>
+            </thead>
+            <tbody class="font-mono text-xs" id="extraction-fields-container">
+              <!-- progressive fields template -->
+              <tr class="border-b border-zinc-900/60 hover:bg-zinc-950/20 transition-colors" id="field-vendor_name">
+                <td class="py-2.5 px-1 font-bold text-indigo-400 tracking-wide">vendor_name</td>
+                <td class="py-2.5 px-2 text-zinc-500 font-semibold field-value">...</td>
+                <td class="py-2.5 px-1 text-right">
+                  <div class="flex items-center justify-end">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 status-dot shadow-[0_0_5px_rgba(39,39,42,0.5)]"></span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-b border-zinc-900/60 hover:bg-zinc-950/20 transition-colors" id="field-gstin">
+                <td class="py-2.5 px-1 font-bold text-indigo-400 tracking-wide">gstin</td>
+                <td class="py-2.5 px-2 text-zinc-500 font-semibold field-value">...</td>
+                <td class="py-2.5 px-1 text-right">
+                  <div class="flex items-center justify-end">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 status-dot shadow-[0_0_5px_rgba(39,39,42,0.5)]"></span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-b border-zinc-900/60 hover:bg-zinc-950/20 transition-colors" id="field-invoice_number">
+                <td class="py-2.5 px-1 font-bold text-indigo-400 tracking-wide">invoice_number</td>
+                <td class="py-2.5 px-2 text-zinc-500 font-semibold field-value">...</td>
+                <td class="py-2.5 px-1 text-right">
+                  <div class="flex items-center justify-end">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 status-dot shadow-[0_0_5px_rgba(39,39,42,0.5)]"></span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-b border-zinc-900/60 hover:bg-zinc-950/20 transition-colors" id="field-amount">
+                <td class="py-2.5 px-1 font-bold text-indigo-400 tracking-wide">amount</td>
+                <td class="py-2.5 px-2 text-zinc-500 font-semibold field-value">...</td>
+                <td class="py-2.5 px-1 text-right">
+                  <div class="flex items-center justify-end">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 status-dot shadow-[0_0_5px_rgba(39,39,42,0.5)]"></span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-b border-zinc-900/60 hover:bg-zinc-950/20 transition-colors" id="field-currency">
+                <td class="py-2.5 px-1 font-bold text-indigo-400 tracking-wide">currency</td>
+                <td class="py-2.5 px-2 text-zinc-500 font-semibold field-value">...</td>
+                <td class="py-2.5 px-1 text-right">
+                  <div class="flex items-center justify-end">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 status-dot shadow-[0_0_5px_rgba(39,39,42,0.5)]"></span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-b border-zinc-900/60 hover:bg-zinc-950/20 transition-colors" id="field-date">
+                <td class="py-2.5 px-1 font-bold text-indigo-400 tracking-wide">date</td>
+                <td class="py-2.5 px-2 text-zinc-500 font-semibold field-value">...</td>
+                <td class="py-2.5 px-1 text-right">
+                  <div class="flex items-center justify-end">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 status-dot shadow-[0_0_5px_rgba(39,39,42,0.5)]"></span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-b border-zinc-900/60 hover:bg-zinc-950/20 transition-colors" id="field-category">
+                <td class="py-2.5 px-1 font-bold text-indigo-400 tracking-wide">category</td>
+                <td class="py-2.5 px-2 text-zinc-500 font-semibold field-value">...</td>
+                <td class="py-2.5 px-1 text-right">
+                  <div class="flex items-center justify-end">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 status-dot shadow-[0_0_5px_rgba(39,39,42,0.5)]"></span>
+                  </div>
+                </td>
+              </tr>
+              <tr class="border-b border-zinc-900/60 hover:bg-zinc-950/20 transition-colors" id="field-employee_id">
+                <td class="py-2.5 px-1 font-bold text-indigo-400 tracking-wide">employee_id</td>
+                <td class="py-2.5 px-2 text-zinc-500 font-semibold field-value">...</td>
+                <td class="py-2.5 px-1 text-right">
+                  <div class="flex items-center justify-end">
+                    <span class="w-2.5 h-2.5 rounded-full bg-zinc-800 status-dot shadow-[0_0_5px_rgba(39,39,42,0.5)]"></span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Provider Registry Match line -->
-        <div id="provider-match-box" class="mt-4 p-3 bg-zinc-950/60 border border-zinc-800 rounded-lg hidden animate-scale-in">
-          <div class="flex items-start gap-2 text-xs font-mono">
-            <span class="text-emerald-500">✓</span>
+        <div id="provider-match-box" class="mt-2 p-3 bg-zinc-950/80 border border-zinc-800/80 rounded-lg hidden animate-scale-in">
+          <div class="flex items-start gap-2.5 text-xs font-mono">
+            <span class="text-emerald-500 font-black">✓</span>
             <div>
               <p class="font-bold text-zinc-300 uppercase tracking-widest text-[10px]">Merchant Match Engine</p>
               <p id="provider-match-text" class="text-zinc-400 mt-0.5">Matched: Taj Grand Residency Hotel (GSTIN ✓)</p>
