@@ -70,6 +70,35 @@ graph TD
     I --> N["Audit Log: APPROVED"]
 ```
 
+### 🧠 The Core Agent Team & Roles
+
+| Agent Name | Google Cloud / GenAI Stack | Primary Responsibility | Failure Severity |
+| :--- | :--- | :--- | :--- |
+| **1. Multimodal Intake** | `Gemini 3.5 Flash` + Visual Prompts | OCR parsing, Prompt-injection shielding, validation | `REJECTED_NOT_A_BILL` |
+| **2. MCP Verifier** | Cloud Run (MCP Server) + Starlette Client | Real-time invoice matching against merchant SSE endpoints | `HARD_FAIL` (on match failure) |
+| **3. Policy Auditor** | BigQuery `policy_rules` table | Matching employee grade caps and mandatory receipt thresholds | `HARD_FAIL` (on policy breach) |
+| **4. Pattern Detector** | BigQuery `claim_history` table | Identifying duplicate invoices and sliding-window claim spikes | `HARD_FAIL` (duplicates) / `FLAG` |
+| **5. Arbiter Orchestrator** | FastAPI + Python `asyncio` threads | Thread fanning, score aggregation, automated LLM resolution | Orchestrates the entire pipeline |
+| **6. Escalation Agent** | `Gemini 3.5 Flash` | Formulating a crisp package with targeted questions for humans | `ESCALATED` |
+
+---
+
+### 🔄 Step-by-Step Data Flow Sequence
+
+1. **Intake & Shielding**: Raw images are fed to the **Intake Agent**. It strips away visual noise, sanitizes instructions (blocking prompt injection), and extracts structured JSON.
+2. **Parallel Fan-Out**: The **Arbiter Orchestrator** launches three audits in parallel:
+   - **Network Check**: Queries the merchant via Starlette-MCP with a strict 5s timeout.
+   - **Rule Check**: Evaluates corporate limits inside BigQuery.
+   - **History Check**: Scans BigQuery claim history for double-dipping.
+3. **Consolidation**: Evaluations return evidence packages containing `PASS`, `HARD_FAIL`, or `FLAG`.
+4. **Resolution Engine**:
+   - Any `HARD_FAIL` triggers an instant Red **REFUSED** stamp.
+   - All `PASS` triggers the secure Green **APPROVED** execution gate.
+   - Any `FLAG` (clustering/anomalies) activates a single-round **LLM Reasoning Session** to self-resolve or compile an escalation.
+5. **Auditing & Speech**: The final decision is permanently logged to BigQuery, and the **Gemini 3.1 TTS Engine** dynamically generates a clean vocal walkthrough of the audit result.
+
+---
+
 ---
 
 ## 🛠️ Technology Stack
