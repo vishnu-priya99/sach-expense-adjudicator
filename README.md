@@ -72,6 +72,21 @@ graph TD
 
 ### 🧠 The Core Agent Team & Roles
 
+Here is a quick-reference matrix of the parallel cognitive agent team:
+
+| Agent Name | Google Cloud / GenAI Stack | Primary Responsibility | Failure Severity / Trigger |
+| :--- | :--- | :--- | :--- |
+| **🛡️ 1. Multimodal Intake** | `Gemini 3.5 Flash` + Vision Prompts | Visual receipt parsing, Shield prompt injections | `REJECTED_NOT_A_BILL` |
+| **⚡ 2. MCP Verifier** | Cloud Run (MCP Servers) + Starlette SSE | Live network invoice match with merchant tools | `HARD_FAIL` |
+| **📊 3. Policy Auditor** | BigQuery `policy_rules` lookup | Audit corporate capping & threshold limits | `HARD_FAIL` |
+| **🔍 4. Pattern Detector** | BigQuery `claim_history` scanning | Flags duplicates and sliding-window claim spikes | `HARD_FAIL` / `FLAG` |
+| **⚙️ 5. Arbiter Orchestrator** | FastAPI + Python `asyncio` concurrent pool | Thread fanning, result aggregation, LLM arbiter | Pipeline Consensus |
+| **📩 6. Escalation Agent** | `Gemini 3.5 Flash` Context prompts | Compiling review package & single Yes/No query | `ESCALATED` |
+
+---
+
+### 🔍 Deep-Dive Agent Team Details
+
 *   **🛡️ 1. Multimodal Intake Agent**
     *   **Google Cloud / GenAI Stack**: `Gemini 3.5 Flash` + Multimodal Vision Prompts
     *   **Primary Responsibility**: Messy receipt OCR parsing, Prompt-injection shielding, and visual specimen validation.
