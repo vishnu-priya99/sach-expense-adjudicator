@@ -141,8 +141,54 @@ Here is a quick-reference matrix of the parallel cognitive agent team:
 *   **Backend Framework**: FastAPI, Uvicorn, Python, `asyncio`
 *   **Agent Communication**: Starlette-MCP client sessions, Server-Sent Events (SSE)
 *   **Database & Querying**: Google BigQuery API, SQL
-*   **Orchestration**: Thread Pool Executors (handling concurrent BigQuery SQL queries Alongside async network sockets)
+*   **Orchestration**: Thread Pool Executors (handling concurrent BigQuery SQL queries alongside async network sockets)
 *   **Frontend**: Vanilla HTML5, CSS3, TailwindCSS (CDN), glowing dark-mode UI with SSE EventSource stream rendering.
+
+---
+
+## 🚀 Local Development & Setup
+
+Follow these steps to run the complete Sach multi-agent suite locally:
+
+### 1. Prerequisites & Environment Setup
+Make sure you have Python 3.11+ installed. We use **`uv`** as our fast package manager:
+```bash
+# Clone the repository
+git clone https://github.com/vishnu-priya99/sach-expense-adjudicator.git
+cd sach-expense-adjudicator
+
+# Install the uv package manager
+pip install uv
+
+# Create a virtual environment and activate it
+uv venv
+# On Windows PowerShell:
+.venv\Scripts\activate
+# On macOS/Linux:
+# source .venv/bin/activate
+```
+
+### 2. Configure Local Configuration
+Copy the environment variables template and configure your parameters:
+```bash
+cp .env.example .env
+```
+Open `.env` and fill in:
+*   `GEMINI_API_KEY`: Your Google Gemini API Key.
+*   `GCP_PROJECT_ID`: Your Google Cloud Project ID (e.g., `deepmind-hack26blr-4070`).
+*   `BQ_DATASET`: Your BigQuery dataset name (`sach_expense_adjudicator`).
+*   `GCS_BUCKET`: Your Cloud Storage bucket name (`sach-expense-receipts-bucket-4070`).
+
+### 3. Run the Control Room
+To launch the FastAPI application and start serving the Projector Control Room locally:
+```bash
+# Install dependencies in editable mode
+uv pip install -e .
+
+# Launch local uvicorn server
+uvicorn main:app --reload --port 8000
+```
+Open **`http://localhost:8000`** in your browser (Chrome or MS Edge) to experience the real-time Multi-Agent control room dashboard!
 
 ---
 
@@ -169,6 +215,42 @@ To maximize performance, the **Arbiter Orchestrator** launches multiple evaluati
 *   **Policy Violation**: Any `HARD_FAIL` (such as a fake invoice or category limit breach) results in an instant `REJECTED` verdict.
 *   **Ambiguous Flags**: If warnings or clustering flags are raised (but no hard limits are breached), the Arbiter invokes a special **one-round LLM resolution session** using `gemini-3.5-flash` to evaluate the context and decide whether to approve or escalate.
 *   **Escalation Package**: If escalated, the **Escalation Agent** generates a beautiful, structured JSON package for human compliance managers, detailing the disagreement and formulating a single, targeted Yes/No question for the reviewer.
+
+---
+
+## 🗄️ BigQuery Database Schema
+
+Sach relies on Google BigQuery for absolute verifiability and audit persistence. The system leverages 4 core relational tables:
+
+1.  **`audit_log`** (Pipeline Ledger):
+    *   `claim_id` (STRING): Unique UUID.
+    *   `event_type` (STRING): Stage identifier (`extraction_field`, `provider_identified`, `gate_check`, etc.)
+    *   `status` (STRING): Current evaluation status.
+    *   `agent` (STRING): Reporting agent ID.
+    *   `finding` (STRING): Contextual reasoning text or logs.
+    *   `severity` (STRING): Flags raised (`PASS`, `FLAG`, `HARD_FAIL`).
+    *   `timestamp` (TIMESTAMP): Standard UTC timestamp.
+
+2.  **`policy_rules`** (Compliance Matrix):
+    *   `employee_grade` (STRING): e.g. `Associate`, `Manager`, `Director`.
+    *   `category` (STRING): e.g. `Hotel`, `Cab`, `Restaurant`.
+    *   `cap_amount` (NUMERIC): Maximum cap allowed for reimbursement.
+    *   `receipt_required` (BOOLEAN): Hard gateway check for physical receipts.
+
+3.  **`claim_history`** (Anomalous Search Space):
+    *   `claim_id` (STRING): Historical claim ID.
+    *   `employee_id` (STRING): Submitting employee.
+    *   `amount` (NUMERIC): Claim amount.
+    *   `category` (STRING): Expense category.
+    *   `date` (DATE): Receipt date.
+    *   `status` (STRING): Final outcome.
+
+4.  **`provider_registry`** (Starlette MCP Address Space):
+    *   `gstin` (STRING): Target merchant GSTIN key.
+    *   `name` (STRING): Registered vendor name.
+    *   `category` (STRING): Vendor category.
+    *   `status` (STRING): Merchant license standing.
+    *   `endpoint_url` (STRING): Registered SSE-MCP gateway address.
 
 ---
 
