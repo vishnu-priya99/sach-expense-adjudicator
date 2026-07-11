@@ -72,14 +72,35 @@ graph TD
 
 ### 🧠 The Core Agent Team & Roles
 
-| Agent Name | Google Cloud / GenAI Stack | Primary Responsibility | Failure Severity |
-| :--- | :--- | :--- | :--- |
-| **1. Multimodal Intake** | `Gemini 3.5 Flash` + Visual Prompts | OCR parsing, Prompt-injection shielding, validation | `REJECTED_NOT_A_BILL` |
-| **2. MCP Verifier** | Cloud Run (MCP Server) + Starlette Client | Real-time invoice matching against merchant SSE endpoints | `HARD_FAIL` (on match failure) |
-| **3. Policy Auditor** | BigQuery `policy_rules` table | Matching employee grade caps and mandatory receipt thresholds | `HARD_FAIL` (on policy breach) |
-| **4. Pattern Detector** | BigQuery `claim_history` table | Identifying duplicate invoices and sliding-window claim spikes | `HARD_FAIL` (duplicates) / `FLAG` |
-| **5. Arbiter Orchestrator** | FastAPI + Python `asyncio` threads | Thread fanning, score aggregation, automated LLM resolution | Orchestrates the entire pipeline |
-| **6. Escalation Agent** | `Gemini 3.5 Flash` | Formulating a crisp package with targeted questions for humans | `ESCALATED` |
+*   **🛡️ 1. Multimodal Intake Agent**
+    *   **Google Cloud / GenAI Stack**: `Gemini 3.5 Flash` + Multimodal Vision Prompts
+    *   **Primary Responsibility**: Messy receipt OCR parsing, Prompt-injection shielding, and visual specimen validation.
+    *   **Failure Severity / Trigger**: `REJECTED_NOT_A_BILL` (Instantly flags and halts invalid uploads).
+
+*   **⚡ 2. MCP Verifier Agent**
+    *   **Google Cloud / GenAI Stack**: Cloud Run (MCP Servers) + Starlette Sockets Client
+    *   **Primary Responsibility**: Establishes live Starlette SSE sessions to verify GSTINs and check if invoices exist in merchant records.
+    *   **Failure Severity / Trigger**: `HARD_FAIL` (Flags fake, altered, or unrecorded invoice claims).
+
+*   **📊 3. Policy Auditor Agent**
+    *   **Google Cloud / GenAI Stack**: BigQuery `policy_rules` table lookup
+    *   **Primary Responsibility**: Computes employee grade maps (e.g. Associate vs Manager) and audits if claims exceed category caps.
+    *   **Failure Severity / Trigger**: `HARD_FAIL` (Flags clear corporate policy limit breaches).
+
+*   **🔍 4. Pattern Detector Agent**
+    *   **Google Cloud / GenAI Stack**: BigQuery `claim_history` audit tables
+    *   **Primary Responsibility**: Scans historical tables for duplicate submissions or sliding-window clusters (e.g. 3 claims in 7 days).
+    *   **Failure Severity / Trigger**: `HARD_FAIL` (on duplicates) or `FLAG` (on suspicious near-limit spending clusters).
+
+*   **⚙️ 5. Arbiter Orchestrator Agent**
+    *   **Google Cloud / GenAI Stack**: FastAPI + Python `asyncio` concurrent worker threads
+    *   **Primary Responsibility**: Orchestrates the concurrent execution pool, consolidates findings, and conducts 1-round automated dispute resolution.
+    *   **Failure Severity / Trigger**: Manages pipeline consensus and logs audit decisions.
+
+*   **📩 6. Escalation Agent**
+    *   **Google Cloud / GenAI Stack**: `Gemini 3.5 Flash` Contextual Prompting
+    *   **Primary Responsibility**: Formulates structured human-review packages and crafts simple, single-targeted questions for the manual compliance desk.
+    *   **Failure Severity / Trigger**: `ESCALATED` (Triggers visual warning cues and queues claim for human intervention).
 
 ---
 
