@@ -43,8 +43,8 @@ Sach is deeply integrated into the Google Cloud Platform (GCP) ecosystem, levera
 
 ```mermaid
 graph TD
-    A["Raw Receipt Image (.jpg/.png)"] --> B["Intake Agent (Gemini 3.5 Flash)"]
-    B -->|REJECTED (Not a Bill)| C["Audit Log: REJECTED_NOT_A_BILL"]
+    A["Raw Receipt Image (.jpg/.png)"] --> B["Intake Agent - Gemini 3.5 Flash"]
+    B -->|REJECTED - Not a Bill| C["Audit Log: REJECTED_NOT_A_BILL"]
     B -->|EXTRACTED JSON| D["Arbiter Orchestrator Agent"]
     
     D --> E["Parallel Evaluations"]
@@ -55,15 +55,15 @@ graph TD
     end
     E --> E1 & E2 & E3
     
-    E1 & E2 & E3 -->|Results & Evidence| F["Orchestration Consolidation"]
+    E1 & E2 & E3 -->|Results and Evidence| F["Orchestration Consolidation"]
     F --> G{Decision Engine}
     
     G -->|HARD_FAIL| H["Decision: REJECTED"]
-    G -->|PASS (All Green)| I["Call Approval Gate (execute_approval)"]
-    G -->|FLAGs Raised| J["Automated LLM Resolution (1-Round)"]
+    G -->|PASS - All Green| I["Call Approval Gate: execute_approval"]
+    G -->|FLAGS Raised| J["Automated LLM Resolution: 1-Round"]
     
     J -->|Self-Approved| I
-    J -->|Escalate| K["Escalation Agent (Human-Review Package)"]
+    J -->|Escalate| K["Escalation Agent - Human-Review Package"]
     
     K --> L["Audit Log: ESCALATED"]
     H --> M["Audit Log: REJECTED"]
