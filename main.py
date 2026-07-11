@@ -332,7 +332,15 @@ async def get_claim_events(claim_id: str) -> StreamingResponse:
             if claim_id in claim_event_queues:
                 del claim_event_queues[claim_id]
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_generator(), 
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 
 if __name__ == "__main__":
