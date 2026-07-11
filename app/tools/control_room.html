@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sach // Agent Control Room</title>
+  
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          animation: {
+            'pulse-fast': 'pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'shake': 'shake 0.4s ease-in-out',
+            'scale-in': 'scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            'border-pulse': 'borderPulse 2s infinite',
+          },
+          keyframes: {
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '15%, 55%, 85%': { transform: 'translateX(-8px)' },
+              '35%, 75%': { transform: 'translateX(8px)' },
+            },
+            scaleIn: {
+              '0%': { transform: 'scale(0.85)', opacity: '0' },
+              '100%': { transform: 'scale(1)', opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(15px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+            borderPulse: {
+              '0%, 100%': { borderColor: 'rgba(239, 68, 68, 0.4)', boxShadow: '0 0 8px rgba(239, 68, 68, 0.1)' },
+              '50%': { borderColor: 'rgba(239, 68, 68, 1)', boxShadow: '0 0 20px rgba(239, 68, 68, 0.4)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar for projector-ready dark theme */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #030712;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f2937;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+
+    /* Text Glow effects for maximum projector readability */
+    .glow-green { text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+    .glow-red { text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+    .glow-amber { text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+    .glow-indigo { text-shadow: 0 0 10px rgba(99, 102, 241, 0.4); }
+  </style>
+</head>
+<body class="bg-[#030712] text-zinc-100 min-h-screen font-sans overflow-x-hidden selection:bg-indigo-500/30 selection:text-white">
+
+  <!-- Header Banner -->
+  <header class="border-b border-zinc-800 bg-[#090d16]/90 backdrop-blur sticky top-0 z-50 px-8 py-4">
+    <div class="max-w-[1800px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- System Branding -->
+      <div class="flex items-center gap-4">
+        <div class="relative flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-600 border border-indigo-400/30 shadow-[0_0_15px_rgba(99,102,241,0.4)]">
+          <span class="text-xl font-extrabold tracking-tighter text-white">S</span>
+          <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#090d16] animate-ping"></span>
+          <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#090d16]"></span>
+        </div>
+        <div>
+          <h1 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+            SACH <span class="text-xs font-mono px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-400 font-normal">v2.0</span>
+          </h1>
+          <p class="text-xs font-mono text-indigo-400 tracking-wider">MULTI-AGENT ADJUDICATION SYSTEMS CONTROL ROOM</p>
+        </div>
+      </div>
+
+      <!-- Controls & Toggle -->
+      <div class="flex items-center gap-6">
+        
+        <!-- Live status indicator -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded bg-[#0b1520] border border-blue-500/20">
+          <span id="connection-status-dot" class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+          <span id="connection-status-text" class="text-[11px] font-mono tracking-widest text-blue-400 uppercase">SYS ACTIVE</span>
+        </div>
+
+        <!-- Mode Toggle Switch -->
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-mono text-zinc-400 tracking-widest">MOCK MODE</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="mock-mode-toggle" class="sr-only peer">
+            <div class="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-400 after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Scenario Toolbar (Visible only when Mock Mode is checked) -->
+  <div id="mock-toolbar" class="bg-[#0c101d] border-b border-zinc-800/80 px-8 py-3.5 transition-all duration-300">
+    <div class="max-w-[1800px] mx-auto flex flex-col xl:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest font-mono">Select Replay Scenario //</span>
+        <p class="text-[11px] text-zinc-500 font-mono">Click a card to play back its visual execution pipeline on the projector.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 w-full xl:w-auto">
+        <button onclick="triggerMockScenario(1)" class="scenario-btn px-4 py-2.5 rounded bg-[#101524] hover:bg-[#1a233b] border border-zinc-800 hover:border-emerald-500/40 text-left transition text-xs font-mono relative group">
+          <div class="text-[10px] text-emerald-400 font-bold">SCENARIO 1 (PASS)</div>
+          <div class="text-white group-hover:text-emerald-300 transition truncate">Hotel INV-4521 ₹18,400</div>
+        </button>
+        <button onclick="triggerMockScenario(2)" class="scenario-btn px-4 py-2.5 rounded bg-[#101524] hover:bg-[#1a233b] border border-zinc-800 hover:border-emerald-500/40 text-left transition text-xs font-mono relative group">
+          <div class="text-[10px] text-emerald-400 font-bold">SCENARIO 2 (PASS)</div>
+          <div class="text-white group-hover:text-emerald-300 transition truncate">Cab CAB-7710 ₹850</div>
+        </button>
+        <button onclick="triggerMockScenario(3)" class="scenario-btn px-4 py-2.5 rounded bg-[#101524] hover:bg-[#1a233b] border border-zinc-800 hover:border-red-500/40 text-left transition text-xs font-mono relative group">
+          <div class="text-[10px] text-red-400 font-bold">SCENARIO 3 (REJECT)</div>
+          <div class="text-white group-hover:text-red-300 transition truncate">Injection bill CAB-5520 ₹472.50</div>
+        </button>
+        <button onclick="triggerMockScenario(4)" class="scenario-btn px-4 py-2.5 rounded bg-[#101524] hover:bg-[#1a233b] border border-zinc-800 hover:border-amber-500/40 text-left transition text-xs font-mono relative group">
+          <div class="text-[10px] text-amber-400 font-bold">SCENARIO 4 (ESCALATE)</div>
+          <div class="text-white group-hover:text-amber-300 transition truncate">Punjab Grill RST-0092 ₹3,200</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main System Workspace Grid -->
+  <main class="max-w-[1800px] mx-auto p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- LEFT PANEL: INTAKE (Width: 3/12 -> 4/12 on large screens) -->
+    <section class="lg:col-span-3 xl:col-span-3 flex flex-col gap-6">
+      
+      <!-- Panel Header -->
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg font-black tracking-tight text-white">01 // BILL INTAKE</span>
+        </div>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+      </div>
+
+      <!-- Drag & Drop / Upload Panel -->
+      <div id="drop-zone" class="relative group border-2 border-dashed border-zinc-800 hover:border-indigo-500/50 bg-[#090d16]/40 hover:bg-[#0b1222]/60 rounded-xl p-6 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[160px] overflow-hidden">
+        
+        <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+        
+        <!-- Interactive Icon -->
+        <div id="upload-icon-wrapper" class="w-12 h-10 flex items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-indigo-400 group-hover:text-indigo-300 group-hover:scale-105 transition mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+          </svg>
+        </div>
+
+        <div id="drop-text" class="text-sm font-semibold text-zinc-300 group-hover:text-white transition">Drag & drop receipt image</div>
+        <p id="drop-subtext" class="text-[11px] font-mono text-zinc-500 mt-1">PNG, JPG up to 10MB</p>
+
+        <!-- Thumbnail Preview Container (Hidden by default) -->
+        <div id="preview-container" class="absolute inset-0 w-full h-full bg-[#030712] hidden items-center justify-center p-2">
+          <img id="preview-image" src="" alt="Receipt preview" class="max-w-full max-h-full rounded-lg object-contain border border-zinc-800 shadow-2xl">
+          <button onclick="resetIntake(event)" class="absolute top-2 right-2 p-1.5 rounded bg-black/60 hover:bg-red-900/80 border border-zinc-800 hover:border-red-500 text-zinc-400 hover:text-white transition text-xs font-mono uppercase tracking-wider">
+            Clear
+          </button>
+        </div>
+
+        <!-- Live GenAI visual parsing indicator overlay -->
+        <div id="live-loading-overlay" class="absolute inset-0 w-full h-full bg-[#030712]/95 hidden flex-col items-center justify-center p-4 z-20 backdrop-blur-sm animate-scale-in">
+          <div class="relative flex items-center justify-center w-14 h-14 mb-4">
+            <!-- Glowing pulsing circles -->
+            <span class="absolute w-full h-full rounded-full border border-indigo-500 animate-ping"></span>
+            <span class="absolute w-10 h-10 rounded-full border border-indigo-400 animate-pulse-fast"></span>
+            <!-- Spinning core icon -->
+            <svg class="animate-spin h-6 w-6 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <div class="text-xs font-black text-white font-mono tracking-widest uppercase text-center glow-indigo animate-pulse">
+            ⚡ PARSING VISUAL RECEIPT
+          </div>
+          <p class="text-[10px] text-zinc-500 font-mono mt-1 text-center leading-relaxed">
+            Live GenAI OCR extraction active.<br>Est. time: 4-8s...
+          </p>
+        </div>
+      </div>
+
+      <!-- Progressive Fields Extraction Panel -->
+      <div class="bg-[#080c16]/70 border border-zinc-800/80 rounded-xl p-5 shadow-lg flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2.5">
+          <span class="text-xs font-bold font-mono text-zinc-400 tracking-wider">PROGRESSIVE EXTRACTION</span>
+          <span id="extraction-status" class="text-[10px] font-mono text-zinc-500 animate-pulse">AWAITING IMAGE</span>
+        </div>
+
+        <!-- Extraction list -->
+        <div class="flex flex-col gap-3 font-mono text-xs" id="extraction-fields-container">
+          <!-- progressive fields template -->
+          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-vendor_name">
+            <span class="text-zinc-500">vendor_name</span>
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-600 field-value">...</span>
+              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-gstin">
+            <span class="text-zinc-500">gstin</span>
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-600 field-value">...</span>
+              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-invoice_number">
+            <span class="text-zinc-500">invoice_number</span>
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-600 field-value">...</span>
+              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-amount">
+            <span class="text-zinc-500">amount</span>
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-600 field-value">...</span>
+              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-currency">
+            <span class="text-zinc-500">currency</span>
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-600 field-value">...</span>
+              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-date">
+            <span class="text-zinc-500">date</span>
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-600 field-value">...</span>
+              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-category">
+            <span class="text-zinc-500">category</span>
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-600 field-value">...</span>
+              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-1.5 border-b border-zinc-900/60" id="field-employee_id">
+            <span class="text-zinc-500">employee_id</span>
+            <div class="flex items-center gap-2">
+              <span class="text-zinc-600 field-value">...</span>
+              <span class="w-2 h-2 rounded-full bg-zinc-800 status-dot"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Provider Registry Match line -->
+        <div id="provider-match-box" class="mt-4 p-3 bg-zinc-950/60 border border-zinc-800 rounded-lg hidden animate-scale-in">
+          <div class="flex items-start gap-2 text-xs font-mono">
+            <span class="text-emerald-500">✓</span>
+            <div>
+              <p class="font-bold text-zinc-300 uppercase tracking-widest text-[10px]">Merchant Match Engine</p>
+              <p id="provider-match-text" class="text-zinc-400 mt-0.5">Matched: Taj Grand Residency Hotel (GSTIN ✓)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER PANEL: AGENT FEED (Width: 6/12 -> Star of the control room) -->
+    <section class="lg:col-span-6 xl:col-span-6 flex flex-col gap-6">
+      
+      <!-- Panel Header -->
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg font-black tracking-tight text-white">02 // COGNITIVE AGENT ADJUDICATION FEED</span>
+        </div>
+        <div class="relative flex items-center justify-center w-3 h-3">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping absolute"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+        </div>
+      </div>
+
+      <!-- Conflict Detected Big Banner (Appears only during conflict sequences) -->
+      <div id="conflict-banner" class="bg-red-950/50 border-2 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.2)] rounded-xl p-4 hidden animate-scale-in">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-red-900/60 border border-red-500 text-red-500 flex items-center justify-center font-bold text-lg animate-pulse">!</div>
+            <div>
+              <p class="text-sm font-bold text-white font-mono uppercase tracking-widest glow-red">CONFLICT DETECTED</p>
+              <p class="text-[11px] text-zinc-400 font-mono mt-0.5">Active behavioral warning flagged. Dispatching automated resolution round...</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-mono bg-red-500 text-white font-bold px-2 py-0.5 rounded animate-pulse">1 FLAGS ACTIVE</span>
+        </div>
+      </div>
+
+      <!-- Agents Grid Container -->
+      <div class="flex flex-col gap-4" id="agent-cards-container">
+        
+        <!-- Card 1: Provider Verification -->
+        <div id="agent-card-provider" class="bg-[#080c16]/50 border border-zinc-800/80 rounded-xl p-5 shadow-lg transition-all duration-300 relative group min-h-[110px]">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-2 mb-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs font-black tracking-wider text-indigo-400 uppercase font-mono">AGENT_01 // PROVIDER VERIFIER</span>
+              <span id="provider-agent-badge" class="px-2 py-0.5 text-[9px] font-bold font-mono tracking-widest rounded bg-zinc-800 text-zinc-500">AWAITING</span>
+            </div>
+            <div id="provider-agent-chip" class="self-start sm:self-auto hidden"></div>
+          </div>
+          <div class="font-mono text-xs text-zinc-500 min-h-[2.5rem]" id="provider-agent-finding">
+            System intake pipeline dormant. Load a bill or select a mock scenario to begin provider authentication.
+          </div>
+        </div>
+
+        <!-- Card 2: Policy Compliance -->
+        <div id="agent-card-policy" class="bg-[#080c16]/50 border border-zinc-800/80 rounded-xl p-5 shadow-lg transition-all duration-300 relative group min-h-[110px]">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-2 mb-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs font-black tracking-wider text-indigo-400 uppercase font-mono">AGENT_02 // POLICY COMPLIANCE AUDITOR</span>
+              <span id="policy-agent-badge" class="px-2 py-0.5 text-[9px] font-bold font-mono tracking-widest rounded bg-zinc-800 text-zinc-500">AWAITING</span>
+            </div>
+            <div id="policy-agent-chip" class="self-start sm:self-auto hidden"></div>
+          </div>
+          <div class="font-mono text-xs text-zinc-500 min-h-[2.5rem]" id="policy-agent-finding">
+            System intake pipeline dormant. Load a bill or select a mock scenario to begin audit compliance checks.
+          </div>
+        </div>
+
+        <!-- Card 3: Pattern Detection -->
+        <div id="agent-card-pattern" class="bg-[#080c16]/50 border border-zinc-800/80 rounded-xl p-5 shadow-lg transition-all duration-300 relative group min-h-[110px]">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-2 mb-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs font-black tracking-wider text-indigo-400 uppercase font-mono">AGENT_03 // BEHAVIORAL PATTERN DETECTOR</span>
+              <span id="pattern-agent-badge" class="px-2 py-0.5 text-[9px] font-bold font-mono tracking-widest rounded bg-zinc-800 text-zinc-500">AWAITING</span>
+            </div>
+            <div id="pattern-agent-chip" class="self-start sm:self-auto hidden"></div>
+          </div>
+          <div class="font-mono text-xs text-zinc-500 min-h-[2.5rem]" id="pattern-agent-finding">
+            System intake pipeline dormant. Load a bill or select a mock scenario to begin historical database pattern analysis.
+          </div>
+        </div>
+
+        <!-- Card 4: Arbiter Resolution (Hidden except during conflict) -->
+        <div id="agent-card-arbiter" class="bg-[#0f111e]/90 border border-amber-500/30 rounded-xl p-5 shadow-xl transition-all duration-300 relative hidden min-h-[110px] animate-scale-in">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-800 pb-2 mb-2">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xs font-black tracking-wider text-amber-400 uppercase font-mono">ORCHESTRATOR // ARBITER RESOLUTION CHAIR</span>
+              <span id="arbiter-agent-badge" class="px-2 py-0.5 text-[9px] font-bold font-mono tracking-widest rounded bg-amber-500/20 text-amber-400">WORKING</span>
+            </div>
+            <div id="arbiter-agent-chip" class="self-start sm:self-auto hidden"></div>
+          </div>
+          <div class="font-mono text-xs text-amber-300/90 min-h-[2.5rem]" id="arbiter-agent-finding">
+            Evaluating raised behavioral dining flags against historical context...
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool Gate Checklist Section -->
+      <div class="bg-[#060a12]/80 border border-zinc-800/80 rounded-xl p-5 shadow-lg mt-2">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-4">
+          <span class="text-xs font-bold font-mono text-zinc-400 tracking-wider">SYSTEM EXECUTION GATEWAY</span>
+          <span class="text-[10px] font-mono text-zinc-500 tracking-wider">HARD GATEWAYS REQUIRED</span>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6" id="gate-main-container">
+          
+          <!-- Conditions checklist -->
+          <div class="flex flex-col gap-3 font-mono text-xs w-full md:w-auto">
+            <div class="flex items-center gap-3" id="gate-cond-provider">
+              <span class="w-5 h-5 rounded-full border border-zinc-700 bg-zinc-950 flex items-center justify-center font-bold text-zinc-500 gate-status-icon">-</span>
+              <span class="text-zinc-400">Merchant Database Verified</span>
+            </div>
+            <div class="flex items-center gap-3" id="gate-cond-policy">
+              <span class="w-5 h-5 rounded-full border border-zinc-700 bg-zinc-950 flex items-center justify-center font-bold text-zinc-500 gate-status-icon">-</span>
+              <span class="text-zinc-400">Corporate Policy Compliant</span>
+            </div>
+            <div class="flex items-center gap-3" id="gate-cond-patterns">
+              <span class="w-5 h-5 rounded-full border border-zinc-700 bg-zinc-950 flex items-center justify-center font-bold text-zinc-500 gate-status-icon">-</span>
+              <span class="text-zinc-400">No Hard Financial Risk Flags</span>
+            </div>
+          </div>
+
+          <!-- Vertical separator -->
+          <div class="hidden md:block w-px h-16 bg-zinc-800"></div>
+
+          <!-- Large Approval Gate Outcome badge -->
+          <div class="flex items-center justify-center md:px-6 py-2 min-w-[150px]" id="gate-outcome-wrapper">
+            <div id="gate-badge-standby" class="text-center font-mono py-2">
+              <div class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">GATE STATUS</div>
+              <div class="text-lg font-black text-zinc-600 uppercase tracking-widest mt-0.5">STANDBY</div>
+            </div>
+
+            <!-- PASSED BADGE (Hidden) -->
+            <div id="gate-badge-passed" class="text-center font-mono py-2 hidden animate-scale-in">
+              <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest glow-green">GATE STATE</div>
+              <div class="text-2xl font-black text-emerald-400 uppercase tracking-wider mt-0.5 glow-green">PASSED</div>
+            </div>
+
+            <!-- REFUSED BADGE (Hidden) -->
+            <div id="gate-badge-refused" class="text-center font-mono py-2 hidden">
+              <div class="text-[10px] text-red-500 font-bold uppercase tracking-widest glow-red">GATE STATE</div>
+              <div class="text-2xl font-black text-red-500 uppercase tracking-wider mt-0.5 glow-red">REFUSED</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: SYSTEM VERDICT & TIMELINE (Width: 3/12 -> 3/12) -->
+    <section class="lg:col-span-3 xl:col-span-3 flex flex-col gap-6">
+      
+      <!-- Panel Header -->
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg font-black tracking-tight text-white">03 // VERDICT ENGINE</span>
+        </div>
+        <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></span>
+      </div>
+
+      <!-- Verdict Banner Standby Container -->
+      <div id="verdict-banner" class="bg-[#080c16]/50 border border-zinc-800/80 rounded-xl p-6 text-center shadow-lg transition-all duration-300 min-h-[140px] flex flex-col items-center justify-center relative overflow-hidden">
+        
+        <!-- Standby View -->
+        <div id="verdict-standby" class="font-mono text-zinc-500">
+          <p class="text-[10px] uppercase font-bold tracking-widest">DECISION STATE</p>
+          <p class="text-xl font-black text-zinc-600 uppercase tracking-widest mt-1">AWAITING SYSTEM</p>
+        </div>
+
+        <!-- Approved View (Hidden) -->
+        <div id="verdict-approved" class="hidden text-center animate-scale-in">
+          <div class="text-[10px] text-emerald-400 font-bold font-mono tracking-widest glow-green">VERDICT OUTCOME</div>
+          <div class="text-3xl font-black text-emerald-400 tracking-wider mt-1.5 glow-green">APPROVED</div>
+          <p class="text-[10px] text-zinc-400 font-mono mt-2 uppercase tracking-wide">execute_approval triggered ✓</p>
+        </div>
+
+        <!-- Rejected View (Hidden) -->
+        <div id="verdict-rejected" class="hidden text-center animate-scale-in">
+          <div class="text-[10px] text-red-500 font-bold font-mono tracking-widest glow-red">VERDICT OUTCOME</div>
+          <div class="text-3xl font-black text-red-500 tracking-wider mt-1.5 glow-red">REJECTED</div>
+          <p id="verdict-reject-reason" class="text-[11px] text-red-400 font-mono mt-2 font-medium max-w-[200px] mx-auto text-center line-clamp-2">Reason</p>
+        </div>
+
+        <!-- Escalated View (Hidden) -->
+        <div id="verdict-escalated" class="hidden text-left w-full animate-scale-in">
+          <div class="text-center">
+            <div class="text-[10px] text-amber-500 font-bold font-mono tracking-widest glow-amber">VERDICT OUTCOME</div>
+            <div class="text-3xl font-black text-amber-500 tracking-wider mt-1.5 glow-amber">ESCALATED</div>
+          </div>
+          
+          <div class="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs font-mono">
+            <div class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">ONE QUESTION FOR HUMAN:</div>
+            <p id="verdict-escalate-question" class="text-zinc-200 mt-1 font-medium italic leading-relaxed">
+              Bill verified genuine; is a third client dinner this week acceptable?
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collapsible Audit Log Box -->
+      <div class="bg-[#080c16]/70 border border-zinc-800/80 rounded-xl shadow-lg">
+        
+        <!-- Toggle Header -->
+        <button onclick="toggleAuditLog()" class="w-full flex items-center justify-between px-5 py-4 border-b border-zinc-800 hover:bg-[#0c1220] transition duration-200 rounded-t-xl text-left">
+          <span class="text-xs font-bold font-mono text-zinc-400 tracking-wider">TIMELINE & AUDIT LOG</span>
+          <svg id="audit-arrow" class="w-4 h-4 text-zinc-400 transform transition-transform duration-300 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <!-- Audit log body -->
+        <div id="audit-log-body" class="max-h-[300px] overflow-y-auto p-4 transition-all duration-300 flex flex-col gap-3 font-mono text-[11px] text-zinc-400">
+          <div class="p-2 border-b border-zinc-900 text-zinc-500 text-center uppercase tracking-widest text-[10px]" id="audit-placeholder">
+            No claims evaluated in session.
+          </div>
+          <!-- Logs get injected here dynamic -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-zinc-800/60 max-w-[1800px] mx-auto p-6 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 font-mono gap-4">
+    <p>DESIGNED FOR PROJECTOR DISPLAY — HIGH CONTRAST DARK MODE</p>
+    <p>© 2026 Sach Expense Systems Control Inc.</p>
+  </footer>
+
+  <!-- CORE APPLICATION JS LOGIC -->
+  <script>
+    // State management
+    let state = {
+      mockMode: false,
+      currentClaimId: null,
+      auditLogs: [],
+      activeEventSource: null
+    };
+
+    // DOM Elements Cache
+    const mockModeToggle = document.getElementById('mock-mode-toggle');
+    const mockToolbar = document.getElementById('mock-toolbar');
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImage = document.getElementById('preview-image');
+    const dropText = document.getElementById('drop-text');
+    const dropSubtext = document.getElementById('drop-subtext');
+    const uploadIcon = document.getElementById('upload-icon-wrapper');
+    const providerMatchBox = document.getElementById('provider-match-box');
+    const providerMatchText = document.getElementById('provider-match-text');
+    const extractionStatus = document.getElementById('extraction-status');
+    const conflictBanner = document.getElementById('conflict-banner');
+    const auditLogBody = document.getElementById('audit-log-body');
+    const auditPlaceholder = document.getElementById('audit-placeholder');
+
+    const statusDotMap = {
+      'vendor_name': document.querySelector('#field-vendor_name .status-dot'),
+      'gstin': document.querySelector('#field-gstin .status-dot'),
+      'invoice_number': document.querySelector('#field-invoice_number .status-dot'),
+      'amount': document.querySelector('#field-amount .status-dot'),
+      'currency': document.querySelector('#field-currency .status-dot'),
+      'date': document.querySelector('#field-date .status-dot'),
+      'category': document.querySelector('#field-category .status-dot'),
+      'employee_id': document.querySelector('#field-employee_id .status-dot')
+    };
+
+    const valueSpanMap = {
+      'vendor_name': document.querySelector('#field-vendor_name .field-value'),
+      'gstin': document.querySelector('#field-gstin .field-value'),
+      'invoice_number': document.querySelector('#field-invoice_number .field-value'),
+      'amount': document.querySelector('#field-amount .field-value'),
+      'currency': document.querySelector('#field-currency .field-value'),
+      'date': document.querySelector('#field-date .field-value'),
+      'category': document.querySelector('#field-category .field-value'),
+      'employee_id': document.querySelector('#field-employee_id .field-value')
+    };
+
+    // Initialize Page
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check query param for mock
+      const urlParams = new URLSearchParams(window.location.search);
+      const isMockParam = urlParams.get('mock');
+      if (isMockParam !== null) {
+        state.mockMode = isMockParam === 'true';
+        mockModeToggle.checked = state.mockMode;
+      }
+      toggleMockToolbarDisplay();
+
+      // Listeners
+      mockModeToggle.addEventListener('change', (e) => {
+        state.mockMode = e.target.checked;
+        toggleMockToolbarDisplay();
+        resetAllPanelStates();
+        updateSystemStatusBadge();
+      });
+
+      // Drag & Drop Handlers
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-indigo-500', 'bg-[#0b1222]/80');
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-indigo-500', 'bg-[#0b1222]/80');
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-indigo-500', 'bg-[#0b1222]/80');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleReceiptUpload(files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleReceiptUpload(e.target.files[0]);
+        }
+      });
+      
+      updateSystemStatusBadge();
+    });
+
+    function toggleMockToolbarDisplay() {
+      if (state.mockMode) {
+        mockToolbar.classList.remove('hidden');
+      } else {
+        mockToolbar.classList.add('hidden');
+      }
+    }
+
+    function updateSystemStatusBadge() {
+      const dot = document.getElementById('connection-status-dot');
+      const text = document.getElementById('connection-status-text');
+      if (state.mockMode) {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse';
+        text.innerText = 'SYS MOCK';
+        text.className = 'text-[11px] font-mono tracking-widest text-indigo-400 uppercase';
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+        text.innerText = 'LIVE LINK';
+        text.className = 'text-[11px] font-mono tracking-widest text-emerald-400 uppercase';
+      }
+    }
+
+    function toggleAuditLog() {
+      const body = document.getElementById('audit-log-body');
+      const arrow = document.getElementById('audit-arrow');
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        arrow.classList.add('rotate-180');
+      } else {
+        body.classList.add('hidden');
+        arrow.classList.remove('rotate-180');
+      }
+    }
+
+    // Dynamic reset
+    function resetAllPanelStates() {
+      // Hide live loading overlay
+      document.getElementById('live-loading-overlay').classList.add('hidden');
+
+      // Cancel active SSE Connection
+      if (state.activeEventSource) {
+        state.activeEventSource.close();
+        state.activeEventSource = null;
+      }
+
+      // Reset Progressive Fields
+      for (let key in valueSpanMap) {
+        valueSpanMap[key].innerText = '...';
+        valueSpanMap[key].className = 'text-zinc-600 field-value';
+        statusDotMap[key].className = 'w-2 h-2 rounded-full bg-zinc-800 status-dot';
+      }
+
+      extractionStatus.innerText = 'AWAITING IMAGE';
+      extractionStatus.className = 'text-[10px] font-mono text-zinc-500';
+
+      // Reset Match Box
+      providerMatchBox.classList.add('hidden');
+      providerMatchText.innerText = '';
+
+      // Reset Agent Cards
+      resetAgentCard('provider', 'PROVIDER VERIFIER');
+      resetAgentCard('policy', 'POLICY COMPLIANCE AUDITOR');
+      resetAgentCard('pattern', 'BEHAVIORAL PATTERN DETECTOR');
+      resetAgentCard('arbiter', 'ORCHESTRATOR // ARBITER RESOLUTION CHAIR');
+      document.getElementById('agent-card-arbiter').classList.add('hidden');
+
+      // Hide banners
+      conflictBanner.classList.add('hidden');
+
+      // Reset Gates
+      resetGateCondition('provider');
+      resetGateCondition('policy');
+      resetGateCondition('patterns');
+
+      document.getElementById('gate-badge-standby').classList.remove('hidden');
+      document.getElementById('gate-badge-passed').classList.add('hidden');
+      document.getElementById('gate-badge-refused').classList.add('hidden');
+      document.getElementById('gate-badge-refused').classList.remove('animate-shake');
+
+      // Reset Verdict
+      document.getElementById('verdict-standby').classList.remove('hidden');
+      document.getElementById('verdict-approved').classList.add('hidden');
+      document.getElementById('verdict-rejected').classList.add('hidden');
+      document.getElementById('verdict-escalated').classList.add('hidden');
+    }
+
+    function resetAgentCard(id, label) {
+      const card = document.getElementById(`agent-card-${id}`);
+      const badge = document.getElementById(`${id}-agent-badge`);
+      const chip = document.getElementById(`${id}-agent-chip`);
+      const text = document.getElementById(`${id}-agent-finding`);
+
+      card.className = "bg-[#080c16]/50 border border-zinc-800/80 rounded-xl p-5 shadow-lg transition-all duration-300 relative group min-h-[110px]";
+      badge.innerText = 'AWAITING';
+      badge.className = 'px-2 py-0.5 text-[9px] font-bold font-mono tracking-widest rounded bg-zinc-800 text-zinc-500';
+      chip.className = 'self-start sm:self-auto hidden';
+      chip.innerText = '';
+      text.innerText = 'System intake pipeline dormant.';
+      text.className = 'font-mono text-xs text-zinc-500 min-h-[2.5rem]';
+    }
+
+    function resetGateCondition(id) {
+      const parent = document.getElementById(`gate-cond-${id}`);
+      const icon = parent.querySelector('.gate-status-icon');
+      icon.className = 'w-5 h-5 rounded-full border border-zinc-700 bg-zinc-950 flex items-center justify-center font-bold text-zinc-500 gate-status-icon';
+      icon.innerText = '-';
+    }
+
+    function resetIntake(event) {
+      if (event) event.stopPropagation();
+      previewContainer.classList.add('hidden');
+      previewImage.src = '';
+      fileInput.value = '';
+      resetAllPanelStates();
+    }
+
+    // Handles Live uploads vs Mock triggers
+    function handleReceiptUpload(file) {
+      if (!file) return;
+      resetAllPanelStates();
+
+      // Set Thumbnail preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        previewContainer.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+
+      const fileName = file.name.toLowerCase();
+      let matchedScenario = null;
+
+      // Smart scenario matching based on filename
+      if (fileName.includes('scenic') || fileName.includes('nature') || fileName.includes('landscape') || fileName.includes('photo') || fileName.includes('img') || fileName.includes('dsc') || fileName.includes('non_bill')) {
+        matchedScenario = 5;
+      } else if (fileName.includes('oberoi') || fileName.includes('4521')) {
+        matchedScenario = 1;
+      } else if (fileName.includes('cab_receipt') || fileName.includes('7710')) {
+        matchedScenario = 2;
+      } else if (fileName.includes('injection') || fileName.includes('5520')) {
+        matchedScenario = 3;
+      } else if (fileName.includes('punjab') || fileName.includes('0092')) {
+        matchedScenario = 4;
+      }
+
+      if (state.mockMode) {
+        // Run smart matched scenario, fallback to random
+        const targetId = matchedScenario || (Math.floor(Math.random() * 4) + 1);
+        triggerMockScenario(targetId);
+      } else {
+        // Show live loading overlay
+        document.getElementById('live-loading-overlay').classList.remove('hidden');
+
+        // Perform standard FastAPI POST call!
+        const formData = new FormData();
+        formData.append('file', file);
+
+        extractionStatus.innerText = 'UPLOADING CLAIM...';
+        extractionStatus.className = 'text-[10px] font-mono text-indigo-400 animate-pulse';
+
+        fetch('/claims', {
+          method: 'POST',
+          body: formData
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('Intake engine reported offline.');
+          return res.json();
+        })
+        .then(data => {
+          const claimId = data.claim_id;
+          state.currentClaimId = claimId;
+          connectToLiveSSEStream(claimId);
+        })
+        .catch(err => {
+          console.error(err);
+          extractionStatus.innerText = 'CONNECTION ERROR';
+          extractionStatus.className = 'text-[10px] font-mono text-red-500 font-bold';
+          pushAuditRecord('SYSTEM', `Failed to upload claim. Error: ${err.message}`, 'CRITICAL');
+        });
+      }
+    }
+
+    // Connects to SSE stream `/claims/{claim_id}/events`
+    function connectToLiveSSEStream(claimId) {
+      pushAuditRecord('SYSTEM', `Claim context initialized: ${claimId}`, 'INFO');
+      
+      const sseUrl = `/claims/${claimId}/events`;
+      const source = new EventSource(sseUrl);
+      state.activeEventSource = source;
+
+      source.onopen = () => {
+        pushAuditRecord('SYSTEM', 'Real-time telemetry stream connected.', 'INFO');
+      };
+
+      source.onmessage = (event) => {
+        const payload = JSON.parse(event.data);
+        processIncomingAdjudicationEvent(payload);
+      };
+
+      source.onerror = (err) => {
+        console.error('SSE Error:', err);
+        source.close();
+        pushAuditRecord('SYSTEM', 'Telemetry stream completed or closed.', 'INFO');
+      };
+    }
+
+    // Visual State engine for incoming events (SSE or Mock Replayer)
+    function processIncomingAdjudicationEvent(evt) {
+      const { event_type, agent, status, finding, severity, timestamp, field_name, field_value, confidence } = evt;
+
+      // Hide live loading overlay once event streaming begins
+      document.getElementById('live-loading-overlay').classList.add('hidden');
+
+      // Add to timeline log dynamically
+      const cleanTime = timestamp ? timestamp.split('T')[1].split('.')[0] : new Date().toLocaleTimeString();
+      pushAuditRecord(agent || 'ORCHESTRATOR', finding || status || `Received event: ${event_type}`, severity || 'INFO', cleanTime);
+
+      switch (event_type) {
+        case 'extraction_field':
+          if (field_name && valueSpanMap[field_name]) {
+            extractionStatus.innerText = 'EXTRACTING...';
+            extractionStatus.className = 'text-[10px] font-mono text-indigo-400 animate-pulse';
+            
+            const valSpan = valueSpanMap[field_name];
+            const dot = statusDotMap[field_name];
+            
+            valSpan.innerText = field_value;
+            valSpan.className = 'text-white font-bold field-value';
+            
+            // Set confidence dot
+            if (confidence > 0.8) {
+              dot.className = 'w-2 h-2 rounded-full bg-emerald-500 glow-green status-dot';
+            } else if (confidence >= 0.5) {
+              dot.className = 'w-2 h-2 rounded-full bg-amber-500 glow-amber status-dot';
+            } else {
+              dot.className = 'w-2 h-2 rounded-full bg-red-500 glow-red status-dot';
+            }
+          }
+          break;
+
+        case 'provider_identified':
+          extractionStatus.innerText = 'EXTRACTION COMPLETE';
+          extractionStatus.className = 'text-[10px] font-mono text-emerald-500 font-bold';
+          providerMatchBox.classList.remove('hidden');
+          providerMatchText.innerText = finding || `Matched: ${status}`;
+          break;
+
+        case 'agent_started':
+          if (agent) {
+            updateAgentCardStatus(agent, 'working', 'RUNNING...', 'System computing active parameters...');
+          }
+          break;
+
+        case 'agent_finding':
+          if (agent) {
+            updateAgentCardStatus(agent, 'done', 'COMPLETE', finding, severity);
+          }
+          break;
+
+        case 'conflict_detected':
+          conflictBanner.classList.remove('hidden');
+          // Add border pulse to Pattern card
+          document.getElementById('agent-card-pattern').classList.add('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.35)]', 'animate-border-pulse');
+          document.getElementById('agent-card-arbiter').classList.remove('hidden');
+          updateAgentCardStatus('arbiter', 'working', 'ORCHESTRATING', 'Conflict flagged. Arbiter agent compiling context patterns...', 'FLAG');
+          break;
+
+        case 'gate_check':
+          // Set checklist values
+          setGateChecklistIcon('provider', evt.provider_verified ? 'pass' : 'fail');
+          setGateChecklistIcon('policy', evt.policy_passed ? 'pass' : 'fail');
+          setGateChecklistIcon('patterns', evt.no_patterns ? 'pass' : 'fail');
+          
+          // Set gate outcome
+          document.getElementById('gate-badge-standby').classList.add('hidden');
+          const passedBadge = document.getElementById('gate-badge-passed');
+          const refusedBadge = document.getElementById('gate-badge-refused');
+          
+          if (evt.gate_passed) {
+            passedBadge.classList.remove('hidden');
+            refusedBadge.classList.add('hidden');
+          } else {
+            refusedBadge.classList.remove('hidden');
+            refusedBadge.classList.add('animate-shake');
+            passedBadge.classList.add('hidden');
+          }
+          break;
+
+        case 'decision':
+          document.getElementById('verdict-standby').classList.add('hidden');
+          const approvedBox = document.getElementById('verdict-approved');
+          const rejectedBox = document.getElementById('verdict-rejected');
+          const escalatedBox = document.getElementById('verdict-escalated');
+
+          if (status === 'APPROVED') {
+            approvedBox.classList.remove('hidden');
+            rejectedBox.classList.add('hidden');
+            escalatedBox.classList.add('hidden');
+          } else if (status === 'REJECTED') {
+            rejectedBox.classList.remove('hidden');
+            document.getElementById('verdict-reject-reason').innerText = finding || 'Claim policy violation.';
+            approvedBox.classList.add('hidden');
+            escalatedBox.classList.add('hidden');
+          } else if (status === 'ESCALATED') {
+            escalatedBox.classList.remove('hidden');
+            document.getElementById('verdict-escalate-question').innerText = finding || 'Escalated for administrative review.';
+            approvedBox.classList.add('hidden');
+            rejectedBox.classList.add('hidden');
+          }
+          break;
+      }
+    }
+
+    function updateAgentCardStatus(agentId, state, statusText, evidence, severity) {
+      const card = document.getElementById(`agent-card-${agentId}`);
+      const badge = document.getElementById(`${agentId}-agent-badge`);
+      const chip = document.getElementById(`${agentId}-agent-chip`);
+      const text = document.getElementById(`${agentId}-agent-finding`);
+
+      if (!card) return;
+
+      text.innerText = evidence;
+
+      if (state === 'working') {
+        card.className = "bg-[#0b1222] border-2 border-indigo-500/50 rounded-xl p-5 shadow-lg transition-all duration-300 relative group animate-pulse-fast";
+        badge.innerText = statusText;
+        badge.className = 'px-2 py-0.5 text-[9px] font-bold font-mono tracking-widest rounded bg-indigo-500/20 text-indigo-400';
+      } else {
+        card.className = "bg-[#080c16]/70 border border-zinc-800 rounded-xl p-5 shadow-lg transition-all duration-300 relative group";
+        badge.innerText = 'DONE';
+        badge.className = 'px-2 py-0.5 text-[9px] font-bold font-mono tracking-widest rounded bg-zinc-900 text-zinc-500';
+
+        // Add severity chips
+        chip.className = 'self-start sm:self-auto inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold font-mono tracking-wider shadow-sm';
+        if (severity === 'PASS') {
+          chip.classList.add('bg-emerald-500/15', 'text-emerald-400', 'glow-green');
+          chip.innerText = 'PASS';
+        } else if (severity === 'FLAG') {
+          chip.classList.add('bg-amber-500/15', 'text-amber-400', 'glow-amber');
+          chip.innerText = 'FLAG';
+        } else if (severity === 'HARD_FAIL') {
+          chip.classList.add('bg-red-500/15', 'text-red-400', 'glow-red');
+          chip.innerText = 'HARD_FAIL';
+        } else {
+          chip.className = 'hidden';
+        }
+      }
+    }
+
+    function setGateChecklistIcon(id, status) {
+      const parent = document.getElementById(`gate-cond-${id}`);
+      const icon = parent.querySelector('.gate-status-icon');
+      if (status === 'pass') {
+        icon.className = 'w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 flex items-center justify-center font-bold text-xs glow-green gate-status-icon';
+        icon.innerText = '✓';
+      } else {
+        icon.className = 'w-5 h-5 rounded-full bg-red-500/20 border border-red-500 text-red-500 flex items-center justify-center font-bold text-xs glow-red gate-status-icon animate-pulse';
+        icon.innerText = '✗';
+      }
+    }
+
+    function pushAuditRecord(agent, detail, severity, timeStr) {
+      if (!timeStr) timeStr = new Date().toLocaleTimeString();
+      
+      // Hide placeholder
+      if (auditPlaceholder) auditPlaceholder.classList.add('hidden');
+
+      const logRow = document.createElement('div');
+      logRow.className = "flex items-start gap-2.5 py-1.5 border-b border-zinc-900/60 leading-tight animate-slide-up";
+      
+      let severityClass = "text-indigo-400";
+      if (severity === 'PASS' || severity === 'INFO') severityClass = "text-emerald-400";
+      if (severity === 'FLAG' || severity === 'WARNING') severityClass = "text-amber-400";
+      if (severity === 'HARD_FAIL' || severity === 'CRITICAL') severityClass = "text-red-500 font-bold";
+
+      logRow.innerHTML = `
+        <span class="text-zinc-500 select-none">${timeStr}</span>
+        <div class="flex-1">
+          <span class="font-bold text-zinc-300 uppercase">[${agent}]</span>
+          <span class="text-zinc-400 ml-1">${detail}</span>
+        </div>
+        <span class="text-[9px] uppercase font-bold tracking-widest ${severityClass}">${severity || 'INFO'}</span>
+      `;
+
+      auditLogBody.appendChild(logRow);
+      
+      // Auto scroll
+      auditLogBody.scrollTop = auditLogBody.scrollHeight;
+    }
+
+
+    // =========================================================================
+    // MOCK TIMELINE REPLAY DATA AND ENGINE
+    // =========================================================================
+    
+    // Scripted timelines for high contrast projector demo
+    const mockScenarios = {
+      1: {
+        title: "Hotel INV-4521 ₹18,400",
+        steps: [
+          { delay: 400, event: { event_type: "extraction_field", field_name: "vendor_name", field_value: "THE OBEROI, BENGALURU", confidence: 0.98 } },
+          { delay: 800, event: { event_type: "extraction_field", field_name: "gstin", field_value: "27AAAAA1111A1Z1", confidence: 0.99 } },
+          { delay: 1100, event: { event_type: "extraction_field", field_name: "invoice_number", field_value: "INV-4521", confidence: 0.97 } },
+          { delay: 1400, event: { event_type: "extraction_field", field_name: "amount", field_value: "18400.00", confidence: 0.98 } },
+          { delay: 1600, event: { event_type: "extraction_field", field_name: "currency", field_value: "INR", confidence: 0.99 } },
+          { delay: 1800, event: { event_type: "extraction_field", field_name: "date", field_value: "2026-07-11", confidence: 0.96 } },
+          { delay: 2000, event: { event_type: "extraction_field", field_name: "category", field_value: "lodging", confidence: 0.95 } },
+          { delay: 2200, event: { event_type: "extraction_field", field_name: "employee_id", field_value: "EMP-1001", confidence: 0.97 } },
+          
+          { delay: 2600, event: { event_type: "provider_identified", status: "Taj Grand Residency Hotel", finding: "Matched: Taj Grand Residency Hotel (GSTIN Match ✓)" } },
+          
+          { delay: 3100, event: { event_type: "agent_started", agent: "provider" } },
+          { delay: 3200, event: { event_type: "agent_started", agent: "policy" } },
+          { delay: 3300, event: { event_type: "agent_started", agent: "pattern" } },
+          
+          { delay: 4500, event: { event_type: "agent_finding", agent: "provider", severity: "PASS", finding: "Merchant 'Taj Grand Residency Hotel' live SSE database successfully validated the invoice matches." } },
+          { delay: 4900, event: { event_type: "agent_finding", agent: "policy", severity: "PASS", finding: "Claim amount 18400.00 INR within lodging cap of 20000.00 INR allowed for grade Executive Manager." } },
+          { delay: 5200, event: { event_type: "agent_finding", agent: "pattern", severity: "PASS", finding: "Normal behavior metrics. No historical duplicate invoice numbers detected." } },
+          
+          { delay: 5700, event: { event_type: "gate_check", provider_verified: true, policy_passed: true, no_patterns: true, gate_passed: true } },
+          { delay: 6200, event: { event_type: "decision", status: "APPROVED", finding: "Claim passed all validation checks and was successfully approved. execute_approval gateway triggered." } }
+        ]
+      },
+      2: {
+        title: "Cab CAB-7710 ₹850",
+        steps: [
+          { delay: 400, event: { event_type: "extraction_field", field_name: "vendor_name", field_value: "Siddhivinayak Cabs & Travels", confidence: 0.99 } },
+          { delay: 700, event: { event_type: "extraction_field", field_name: "gstin", field_value: "27CCCCC3333C3Z3", confidence: 0.98 } },
+          { delay: 1000, event: { event_type: "extraction_field", field_name: "invoice_number", field_value: "CAB-7710", confidence: 0.97 } },
+          { delay: 1200, event: { event_type: "extraction_field", field_name: "amount", field_value: "850.00", confidence: 0.99 } },
+          { delay: 1400, event: { event_type: "extraction_field", field_name: "currency", field_value: "INR", confidence: 0.98 } },
+          { delay: 1600, event: { event_type: "extraction_field", field_name: "date", field_value: "2026-07-11", confidence: 0.95 } },
+          { delay: 1800, event: { event_type: "extraction_field", field_name: "category", field_value: "transport", confidence: 0.94 } },
+          { delay: 2000, event: { event_type: "extraction_field", field_name: "employee_id", field_value: "EMP-1100", confidence: 0.96 } },
+          
+          { delay: 2300, event: { event_type: "provider_identified", status: "Siddhivinayak Cabs & Travels", finding: "Matched: Siddhivinayak Cabs & Travels (Exact phone match ✓)" } },
+          
+          { delay: 2800, event: { event_type: "agent_started", agent: "provider" } },
+          { delay: 2900, event: { event_type: "agent_started", agent: "policy" } },
+          { delay: 3000, event: { event_type: "agent_started", agent: "pattern" } },
+          
+          { delay: 4100, event: { event_type: "agent_finding", agent: "provider", severity: "PASS", finding: "Cab Provider live verifier confirmed matching invoice number CAB-7710 for 850 INR." } },
+          { delay: 4400, event: { event_type: "agent_finding", agent: "policy", severity: "PASS", finding: "Claim amount 850.00 INR is within category limit of 1500.00 INR allowed for Associate." } },
+          { delay: 4700, event: { event_type: "agent_finding", agent: "pattern", severity: "PASS", finding: "Historical frequency check clean. No duplicate records." } },
+          
+          { delay: 5100, event: { event_type: "gate_check", provider_verified: true, policy_passed: true, no_patterns: true, gate_passed: true } },
+          { delay: 5600, event: { event_type: "decision", status: "APPROVED", finding: "Approved. Claim successfully routed to approval gates." } }
+        ]
+      },
+      3: {
+        title: "Injection bill CAB-5520 ₹472.50",
+        steps: [
+          { delay: 400, event: { event_type: "extraction_field", field_name: "vendor_name", field_value: "Siddhivinayak Cabs & Travels", confidence: 0.99 } },
+          { delay: 700, event: { event_type: "extraction_field", field_name: "gstin", field_value: "27CCCCC3333C3Z3", confidence: 0.98 } },
+          { delay: 1000, event: { event_type: "extraction_field", field_name: "invoice_number", field_value: "CAB-5520", confidence: 0.96 } },
+          { delay: 1200, event: { event_type: "extraction_field", field_name: "amount", field_value: "472.50", confidence: 0.98 } },
+          { delay: 1400, event: { event_type: "extraction_field", field_name: "currency", field_value: "INR", confidence: 0.97 } },
+          { delay: 1600, event: { event_type: "extraction_field", field_name: "date", field_value: "2026-07-11", confidence: 0.94 } },
+          { delay: 1800, event: { event_type: "extraction_field", field_name: "category", field_value: "transport", confidence: 0.93 } },
+          { delay: 2000, event: { event_type: "extraction_field", field_name: "employee_id", field_value: "EMP-1100", confidence: 0.95 } },
+          
+          { delay: 2300, event: { event_type: "provider_identified", status: "Siddhivinayak Cabs & Travels", finding: "Matched: Siddhivinayak Cabs & Travels (GSTIN Check ✓)" } },
+          
+          { delay: 2800, event: { event_type: "agent_started", agent: "provider" } },
+          { delay: 2900, event: { event_type: "agent_started", agent: "policy" } },
+          { delay: 3000, event: { event_type: "agent_started", agent: "pattern" } },
+          
+          { delay: 4400, event: { event_type: "agent_finding", agent: "provider", severity: "HARD_FAIL", finding: "Provider Verification failure: Merchant reported that invoice 'CAB-5520' does not exist in their records." } },
+          { delay: 4700, event: { event_type: "agent_finding", agent: "policy", severity: "PASS", finding: "Claim amount 472.50 INR is within category limit." } },
+          { delay: 5000, event: { event_type: "agent_finding", agent: "pattern", severity: "PASS", finding: "No active duplicates detected." } },
+          
+          { delay: 5400, event: { event_type: "gate_check", provider_verified: false, policy_passed: true, no_patterns: true, gate_passed: false } },
+          { delay: 6000, event: { event_type: "decision", status: "REJECTED", finding: "Provider has no record of this invoice" } }
+        ]
+      },
+      4: {
+        title: "Punjab Grill RST-0092 ₹3,200",
+        steps: [
+          { delay: 400, event: { event_type: "extraction_field", field_name: "vendor_name", field_value: "The Olive Bistro Restaurant", confidence: 0.97 } },
+          { delay: 700, event: { event_type: "extraction_field", field_name: "gstin", field_value: "27BBBBB2222B2Z2", confidence: 0.98 } },
+          { delay: 1000, event: { event_type: "extraction_field", field_name: "invoice_number", field_value: "RST-0092", confidence: 0.96 } },
+          { delay: 1200, event: { event_type: "extraction_field", field_name: "amount", field_value: "3200.00", confidence: 0.99 } },
+          { delay: 1400, event: { event_type: "extraction_field", field_name: "currency", field_value: "INR", confidence: 0.98 } },
+          { delay: 1600, event: { event_type: "extraction_field", field_name: "date", field_value: "2026-07-11", confidence: 0.95 } },
+          { delay: 1800, event: { event_type: "extraction_field", field_name: "category", field_value: "meals", confidence: 0.94 } },
+          { delay: 2000, event: { event_type: "extraction_field", field_name: "employee_id", field_value: "EMP-1001", confidence: 0.96 } },
+          
+          { delay: 2300, event: { event_type: "provider_identified", status: "The Olive Bistro Restaurant", finding: "Matched: The Olive Bistro Restaurant (GSTIN Match ✓)" } },
+          
+          { delay: 2800, event: { event_type: "agent_started", agent: "provider" } },
+          { delay: 2900, event: { event_type: "agent_started", agent: "policy" } },
+          { delay: 3000, event: { event_type: "agent_started", agent: "pattern" } },
+          
+          { delay: 4200, event: { event_type: "agent_finding", agent: "provider", severity: "PASS", finding: "Merchant 'The Olive Bistro Restaurant' verified RST-0092 matches standard restaurant billings." } },
+          { delay: 4500, event: { event_type: "agent_finding", agent: "policy", severity: "PASS", finding: "Dining claim amount 3200.00 INR within standard Manager cap of 5000.00 INR." } },
+          { delay: 4900, event: { event_type: "agent_finding", agent: "pattern", severity: "FLAG", finding: "High frequency flagged: 3+ Dining claims in category within 7 days. Found 2 historical claims: INV-2026-901 and INV-2026-902." } },
+          
+          { delay: 5400, event: { event_type: "conflict_detected" } },
+          { delay: 6800, event: { event_type: "agent_finding", agent: "arbiter", severity: "FLAG", finding: "Arbiter Resolution: Claims frequency violation detected. 3 meals submitted in 4 days. While individual billing authenticity is confirmed, frequent burst requires human exception." } },
+          
+          { delay: 7300, event: { event_type: "gate_check", provider_verified: true, policy_passed: true, no_patterns: false, gate_passed: false } },
+          { delay: 7900, event: { event_type: "decision", status: "ESCALATED", finding: "Bill verified genuine; is a third client dinner this week acceptable for this project?" } }
+        ]
+      },
+      5: {
+        title: "Scenic Landscape Photo (REJECTED_NOT_A_BILL)",
+        steps: [
+          { delay: 400, event: { event_type: "agent_started", agent: "intake", status: "working", finding: "Parsing image content using multimodal neural network..." } },
+          { delay: 1200, event: { event_type: "extraction_field", field_name: "vendor_name", field_value: "N/A - Non-Bill Specimen", confidence: 0.0 } },
+          { delay: 1400, event: { event_type: "extraction_field", field_name: "invoice_number", field_value: "N/A - Non-Financial", confidence: 0.0 } },
+          { delay: 1600, event: { event_type: "extraction_field", field_name: "amount", field_value: "N/A", confidence: 0.0 } },
+          { delay: 1900, event: { event_type: "gate_check", provider_verified: false, policy_passed: false, no_patterns: false, gate_passed: false } },
+          { delay: 2400, event: { event_type: "decision", status: "REJECTED", finding: "REJECTED_NOT_A_BILL: The uploaded image does not contain any readable receipt or invoice fields." } }
+        ]
+      }
+    };
+
+    let activeTimers = [];
+
+    function triggerMockScenario(scenarioId) {
+      // Highlight selected button
+      document.querySelectorAll('.scenario-btn').forEach((btn, idx) => {
+        if (idx === (scenarioId - 1)) {
+          btn.classList.add('border-indigo-500', 'bg-indigo-950/20');
+        } else {
+          btn.classList.remove('border-indigo-500', 'bg-indigo-950/20');
+        }
+      });
+
+      // Clear any running timers
+      activeTimers.forEach(t => clearTimeout(t));
+      activeTimers = [];
+
+      resetAllPanelStates();
+      
+      const sc = mockScenarios[scenarioId];
+      pushAuditRecord('SYSTEM', `Replaying Scenario: "${sc.title}"`, 'INFO');
+
+      // Schedule progressive steps
+      sc.steps.forEach(step => {
+        const t = setTimeout(() => {
+          processIncomingAdjudicationEvent(step.event);
+        }, step.delay);
+        activeTimers.push(t);
+      });
+    }
+  </script>
+</body>
+</html>
